@@ -5,7 +5,7 @@ cmake==3.21.1
 PyYAML==5.4.1
 streamlit==1.22.0
 dlib==19.24.0
-cv2
+streamlit_option_menu
 
 #Fork of face_recognition using prebuild dlib library instead
 face_recognition @ git+https://github.com/thetoby9944/face_recognition
