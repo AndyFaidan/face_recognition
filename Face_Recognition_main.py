@@ -73,34 +73,39 @@ if selected == "Gambar":
 if selected == "WebCam":
     st.title("Aplikasi Pengenalan Wajah")
     st.write(WEBCAM_PROMPT)
-    
+
     # Pengaturan Kamera
     cam = cv2.VideoCapture(0)
     cam.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     FRAME_WINDOW = st.image([])
-    
-    while True:
+
+    # Tambahkan tombol untuk memulai pengambilan frame
+    start_button = st.button("Mulai Pengambilan Frame")
+
+    # Tambahkan kondisi untuk memproses frame hanya jika tombol ditekan
+    if start_button:
         ret, frame = cam.read()
         if not ret:
             st.error("Gagal mengambil frame dari kamera")
             st.info("Harap matikan aplikasi lain yang menggunakan kamera dan restart aplikasi")
-            break  # Hentikan loop jika gagal mendapatkan frame
-        image, name, nim = recognize(frame, TOLERANCE)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-        # Tampilkan nama dan NIM orang
-        name_container.info(f"Nama: {name}")
-        nim_container.success(f"NIM: {nim}")
-        FRAME_WINDOW.image(image)
-
-        # Memainkan suara tergantung pada apakah wajah terdeteksi atau tidak
-        if name != 'Tidak Dikenal':
-            play_audio('StudentIsDetected.mp3')
         else:
-            play_audio('StudentIsNotDetected.mp3')
+            image, name, nim = recognize(frame, TOLERANCE)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    cam.release()  # Bebaskan sumber daya kamera saat aplikasi berakhir
+            # Tampilkan nama dan NIM orang
+            name_container.info(f"Nama: {name}")
+            nim_container.success(f"NIM: {nim}")
+            FRAME_WINDOW.image(image)
+
+            # Memainkan suara tergantung pada apakah wajah terdeteksi atau tidak
+            if name != 'Tidak Dikenal':
+                play_audio('StudentIsDetected.mp3')
+            else:
+                play_audio('StudentIsNotDetected.mp3')
+
+    # Bebaskan sumber daya kamera saat aplikasi berakhir
+    cam.release()
 
 if selected == "Update":
     menu = ["Menambahkan", "Menghapus", "Menyesuaikan"]
