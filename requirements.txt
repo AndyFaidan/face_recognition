@@ -1,17 +1,10 @@
-opencv-contrib-python==4.8.1.78
-opencv-python==4.8.1.78
-opencv-python-headless==4.8.0.74
+opencv-python
 cmake
 pyyaml
 streamlit==1.29.0
-pydub==0.25.1
+pydub
 streamlit_option_menu==0.3.2
 numpy
 
-
 #Fork of face_recognition using prebuild dlib library instead
 face_recognition @ git+https://github.com/thetoby9944/face_recognition
-
-
-
-
