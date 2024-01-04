@@ -1,9 +1,9 @@
 opencv-python
-cmake
-pyyaml
+cmake==3.28.1
+PyYAML==6.0
 streamlit==1.22.0
-pydub
-streamlit_option_menu
+pydub==0.25.1
+streamlit_option_menu==0.3.2
 pickle
 numpy
 
