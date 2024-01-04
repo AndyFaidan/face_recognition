@@ -9,11 +9,19 @@ from pydub import AudioSegment
 from pydub.playback import play
 from utils import recognize, build_dataset, get_database
 from utils import submit_new, get_info_from_nim, delete_one
+from pydub import AudioSegment
+
+# Tentukan jalur ke ffprobe jika belum ada dalam PATH sistem
+AudioSegment.converter = "/opt/homebrew/bin/ffprobe"
 
 # Fungsi untuk memutar suara
 def play_audio(file_path):
-    sound = AudioSegment.from_file(file_path)
-    play(sound)
+    try:
+        sound = AudioSegment.from_file(file_path)
+        play(sound)
+    except Exception as e:
+        print(f"Error playing audio: {e}")
+
 
 # Fungsi untuk menampilkan hasil gambar
 def display_image_results(image, name, nim):
@@ -55,20 +63,20 @@ nim_container.success('NIM: Tidak Dikenal')
 if selected == "Gambar":
     st.title("Aplikasi Pengenalan Wajah")
     st.write(PICTURE_PROMPT)
-    uploaded_images = st.file_uploader("Unggah", type=['jpg','png','jpeg'], accept_multiple_files=True)
-    
+    uploaded_images = st.file_uploader("Unggah", type=['jpg', 'png', 'jpeg'], accept_multiple_files=True)
+
     if len(uploaded_images) != 0:
         # Baca gambar yang diunggah dengan face_recognition
         for image in uploaded_images:
             image = frg.load_image_file(image)
-            image, name, nim = recognize(image, TOLERANCE) 
+            image, name, nim = recognize(image, TOLERANCE)
             display_image_results(image, name, nim)
 
             # Memainkan suara tergantung pada apakah wajah terdeteksi atau tidak
             if name != 'Tidak Dikenal':
-                play_audio('StudentIsDetected.mp3')
+                play_audio('audio/StudentIsDetected.mp3')
             else:
-                play_audio('StudentIsNotDetected.mp3')
+                play_audio('audio/StudentIsNotDetected.mp3')
                 
 if selected == "WebCam":
     st.title("Aplikasi Pengenalan Wajah")
