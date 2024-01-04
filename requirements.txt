@@ -3,7 +3,7 @@ cmake
 pyyaml
 streamlit==1.29.0
 pydub
-streamlit_option_menu==0.3.2
+streamlit_option_menu
 numpy
 
 #Fork of face_recognition using prebuild dlib library instead
