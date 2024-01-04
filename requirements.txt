@@ -1,7 +1,7 @@
 opencv-python
 cmake==3.28.1
 PyYAML==6.0
-streamlit==1.22.0
+streamlit==1.29.0
 pydub==0.25.1
 streamlit_option_menu==0.3.2
 numpy
