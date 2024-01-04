@@ -5,6 +5,7 @@ streamlit==1.22.0
 pydub
 streamlit_option_menu
 pickle
+numpy
 
 
 
