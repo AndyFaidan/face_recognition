@@ -23,6 +23,7 @@ def play_audio(file_path):
         print(f"Error playing audio: {e}")
 
 
+
 # Fungsi untuk menampilkan hasil gambar
 def display_image_results(image, name, nim):
     st.image(image, caption="Foto yang Diambil")
