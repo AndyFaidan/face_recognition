@@ -1,6 +1,7 @@
+
 PATH:
-  DATASET_DIR: 'database.pkl'
-  PKL_PATH: 'database.pkl'
+  DATASET_DIR: 'dataset/'
+  PKL_PATH: 'dataset/database.pkl'
 
 INFO:
   PICTURE_PROMPT: 'Aplikasi ini mengenali wajah dalam video langsung. Untuk menggunakannya, cukup tekan tombol mulai dan izinkan akses ke webcam Anda.'
