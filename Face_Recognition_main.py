@@ -2,98 +2,84 @@ import streamlit as st
 import cv2
 import face_recognition as frg
 import yaml 
-from streamlit_option_menu import option_menu
-from pydub import AudioSegment
-from pydub.playback import play
-from utils import recognize, build_dataset, get_database
-from pydub import AudioSegment
-
-# Tentukan jalur ke ffprobe jika belum ada dalam PATH sistem
-AudioSegment.converter = "/opt/homebrew/bin/ffprobe"
-
-# Fungsi untuk memutar suara
-def play_audio(file_path):
-    try:
-        sound = AudioSegment.from_file(file_path)
-        play(sound)
-    except Exception as e:
-        print(f"Error playing audio: {e}")
-
-
-
-# Fungsi untuk menampilkan hasil gambar
-def display_image_results(image, name, nim):
-    st.image(image, caption="Foto yang Diambil")
-    name_container.info(f"Nama: {name}")
-    nim_container.success(f"NIM: {nim}")
+from utils import recognize, build_dataset
 
 # Path: code\app.py
 st.set_page_config(layout="wide")
 
 # Konfigurasi
-cfg = yaml.safe_load(open('config.yaml','r'))
+cfg = yaml.load(open('config.yaml','r'), Loader=yaml.FullLoader)
 PICTURE_PROMPT = cfg['INFO']['PICTURE_PROMPT']
 WEBCAM_PROMPT = cfg['INFO']['WEBCAM_PROMPT']
 
 st.sidebar.title("Pengaturan")
 
-#opsi menu
-with st.sidebar:
-    selected = option_menu(
-        menu_title=None,
-        options=["Gambar", "WebCam" ],
-        icons=["file-image", "camera"],
-        menu_icon="cast",
-        default_index=0,
-    )
+# Buat menu bar
+menu = ["Foto", "Webcam"]
+pilihan = st.sidebar.selectbox("Jenis Input", menu)
 
-# Tambahkan slider untuk menyesuaikan toleransi
+# Geser untuk menyesuaikan toleransi
 TOLERANCE = st.sidebar.slider("Toleransi", 0.0, 1.0, 0.5, 0.01)
 st.sidebar.info("Toleransi adalah ambang batas untuk pengenalan wajah. Semakin rendah toleransinya, semakin ketat pengenalan wajahnya. Semakin tinggi toleransinya, semakin longgar pengenalan wajahnya.")
 
-# Bagian Informasi
+# Bagian Informasi 
 st.sidebar.title("Informasi Mahasiswa")
-name_container = st.sidebar.empty()
+nama_container = st.sidebar.empty()
 nim_container = st.sidebar.empty()
-name_container.info('Nama: Tidak Dikenal')
-nim_container.success('NIM: Tidak Dikenal')
+nama_container.info('Nama: Tidak Diketahui')
+nim_container.success('NIM: Tidak Diketahui')
 
-if selected == "Gambar":
+if pilihan == "Foto":
     st.title("Aplikasi Pengenalan Wajah")
     st.write(PICTURE_PROMPT)
-    uploaded_images = st.file_uploader("Unggah", type=['jpg', 'png', 'jpeg'], accept_multiple_files=True)
+    foto_diunggah = st.file_uploader("Unggah", type=['jpg', 'png', 'jpeg'], accept_multiple_files=True)
 
-    if len(uploaded_images) != 0:
+    if foto_diunggah:
         # Baca gambar yang diunggah dengan face_recognition
-        for image in uploaded_images:
-            image = frg.load_image_file(image)
-            image, name, nim = recognize(image, TOLERANCE)
-            display_image_results(image, name, nim)
-
-            # Memainkan suara tergantung pada apakah wajah terdeteksi atau tidak
-            if name != 'Tidak Dikenal':
-                play_audio('audio/StudentIsDetected.mp3')
-            else:
-                play_audio('audio/StudentIsNotDetected.mp3')
-                
-if selected == "WebCam":
+        for gambar in foto_diunggah:
+            gambar = frg.load_image_file(gambar)
+            gambar, nama, nim = recognize(gambar, TOLERANCE) 
+            nama_container.info(f"Nama: {nama}")
+            nim_container.success(f"NIM: {nim}")
+            st.image(gambar)
+    else: 
+        st.info("Mohon unggah sebuah gambar")
+    
+elif pilihan == "Webcam":
     st.title("Aplikasi Pengenalan Wajah")
     st.write(WEBCAM_PROMPT)
 
-    #Camera Settings
-    cam = cv2.VideoCapture(0)
-    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    # Pengaturan Kamera
+    kamera = cv2.VideoCapture(0)
+    kamera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    kamera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     FRAME_WINDOW = st.image([])
-    
+
     while True:
-        ret, frame = cam.read()
-        if not ret:
-            st.error("Failed to capture frame from camera")
-            st.info("Please turn off the other app that is using the camera and restart app")
+        # Ambil frame dari kamera
+        berhasil, bingkai = kamera.read()
+
+        if not berhasil:
+            st.error("Gagal mengambil bingkai dari kamera")
+            st.info("Harap matikan aplikasi lain yang menggunakan kamera dan restart aplikasi")
             st.stop()
-        image, name, id = recognize(frame,TOLERANCE)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        #Display name and ID of the person
+
+        # Proses frame untuk pengenalan wajah
+        gambar, nama, nim = recognize(bingkai, TOLERANCE)
+        gambar = cv2.cvtColor(gambar, cv2.COLOR_BGR2RGB)
+
+        # Tampilkan nama dan NIM orang tersebut
+        nama_container.info(f"Nama: {nama}")
+        nim_container.success(f"NIM: {nim}")
+
+        # Tampilkan frame dengan Streamlit
+        FRAME_WINDOW.image(gambar, channels="BGR")
 
 
+with st.sidebar.form(key='my_form'):
+    st.title("Bagian Pengembang")
+    tombol_submit = st.form_submit_button(label='MENYUSUN KEMBALI DATASET')
+    if tombol_submit:
+        with st.spinner("Menyusun kembali dataset..."):
+            build_dataset()
+        st.success("Dataset telah disusun ulang")
