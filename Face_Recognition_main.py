@@ -2,13 +2,10 @@ import streamlit as st
 import cv2
 import face_recognition as frg
 import yaml 
-import pickle 
-import numpy as np
 from streamlit_option_menu import option_menu
 from pydub import AudioSegment
 from pydub.playback import play
 from utils import recognize, build_dataset, get_database
-from utils import submit_new, get_info_from_nim, delete_one
 from pydub import AudioSegment
 
 # Tentukan jalur ke ffprobe jika belum ada dalam PATH sistem
@@ -44,8 +41,8 @@ st.sidebar.title("Pengaturan")
 with st.sidebar:
     selected = option_menu(
         menu_title=None,
-        options=["Gambar", "WebCam", "Update", "Database", ],
-        icons=["journal-code", "journal-check","graph-up", "pin-map", "activity"],
+        options=["Gambar", "WebCam" ],
+        icons=["file-image", "camera"],
         menu_icon="cast",
         default_index=0,
     )
