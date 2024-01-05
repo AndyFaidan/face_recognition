@@ -12,7 +12,15 @@ cfg = yaml.load(open('config.yaml','r'),Loader=yaml.FullLoader)
 PICTURE_PROMPT = cfg['INFO']['PICTURE_PROMPT']
 WEBCAM_PROMPT = cfg['INFO']['WEBCAM_PROMPT']
 
-
+#opsi menu
+with st.sidebar:
+    selected = option_menu(
+        menu_title=None,
+        options=["Gambar", "WebCam" ],
+        icons=["file-image", "camera"],
+        menu_icon="cast",
+        default_index=0,
+    )
 
 st.sidebar.title("Settings")
 
@@ -31,7 +39,7 @@ name_container = st.sidebar.empty()
 id_container = st.sidebar.empty()
 name_container.info('Name: Unnknown')
 id_container.success('NIM: Unknown')
-if choice == "Picture":
+if selected == "Picture":
     st.title("Face Recognition App")
     st.write(PICTURE_PROMPT)
     uploaded_images = st.file_uploader("Upload",type=['jpg','png','jpeg'],accept_multiple_files=True)
@@ -46,7 +54,7 @@ if choice == "Picture":
     else: 
         st.info("Please upload an image")
     
-elif choice == "Webcam":
+if selected == "Webcam":
     st.title("Face Recognition App")
     st.write(WEBCAM_PROMPT)
     #Camera Settings
