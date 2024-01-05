@@ -4,6 +4,7 @@ import cv2
 import face_recognition as frg
 import yaml 
 from utils import recognize, build_dataset
+from streamlit_option_menu import option_menu
 # Path: code\app.py
 
 st.set_page_config(layout="wide")
