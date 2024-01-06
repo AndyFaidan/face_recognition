@@ -73,7 +73,7 @@ elif pilihan == "Webcam":
         nim_container.success(f"NIM: {nim}")
 
         # Display the frame with Streamlit
-        FRAME_WINDOW.image(gambar, channels="BGR")
+        FRAME_WINDOW.image(gambar, channels="RGB")
 
 with st.sidebar.form(key='my_form'):
     st.title("Bagian Pengembang")
