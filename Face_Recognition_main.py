@@ -50,7 +50,7 @@ elif pilihan == "Webcam":
     st.write(WEBCAM_PROMPT)
 
     # Camera Setup
-    kamera = cv2.VideoCapture()
+    kamera = cv2.VideoCapture(0)
     kamera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     kamera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     FRAME_WINDOW = st.image([])
