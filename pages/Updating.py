@@ -2,124 +2,108 @@ import streamlit as st
 import cv2
 import yaml 
 import pickle 
-from utils import submit_new, get_info_from_nim, delete_one
+from utils import submitNew, get_info_from_nim, deleteOne
 import numpy as np
 
 st.set_page_config(layout="wide")
-st.title("Aplikasi Pengenalan Wajah")
-st.write("Aplikasi ini digunakan untuk menambahkan wajah baru ke dataset")
+st.title("Face Recognition App")
+st.write("This app is used to add new faces to the dataset")
 
-menu = ["Menambahkan", "Menghapus", "Menyesuaikan"]
-choice = st.sidebar.selectbox("Pilihan", menu)
-
-if choice == "Menambahkan":
-    nama = st.text_input("Nama", placeholder='Masukkan nama')
-    nim = st.text_input("NIM", placeholder='Masukkan NIM')
-    
-    upload = st.radio("Unggah gambar atau gunakan webcam", ("Unggah", "Webcam"))
-    
-    if upload == "Unggah":
-        uploaded_image = st.file_uploader("Unggah", type=['jpg','png','jpeg'])
-        
+menu = ["Adding", "Deleting", "Adjusting"]
+choice = st.sidebar.selectbox("Options", menu)
+if choice == "Adding":
+    name = st.text_input("Name", placeholder='Enter name')
+    nim = st.text_input("NIM", placeholder='Enter NIM')
+    upload = st.radio("Upload image or use webcam", ("Upload", "Webcam"))
+    if upload == "Upload":
+        uploaded_image = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'])
         if uploaded_image is not None:
             st.image(uploaded_image)
-            submit_btn = st.button("Kirim", key="submit_btn")
-            
+            submit_btn = st.button("Submit", key="submit_btn")
             if submit_btn:
-                if nama == "" or nim == "":
-                    st.error("Harap masukkan nama dan NIM")
+                if name == "" or nim == "":
+                    st.error("Please enter name and NIM")
                 else:
-                    ret = submit_new(nama, nim, uploaded_image)
-                    
-                    if ret == 1: 
-                        st.success("Mahasiswa Ditambahkan")
-                    elif ret == 0: 
-                        st.error("NIM Mahasiswa sudah ada")
-                    elif ret == -1: 
-                        st.error("Tidak ada wajah dalam gambar")
-                        
+                    ret = submitNew(name, nim, uploaded_image)
+                    if ret == 1:
+                        st.success("Student Added")
+                    elif ret == 0:
+                        st.error("Student NIM already exists")
+                    elif ret == -1:
+                        st.error("There is no face in the picture")
     elif upload == "Webcam":
-        img_file_buffer = st.camera_input("Ambil gambar")
-        submit_btn = st.button("Kirim", key="submit_btn")
-        
+        img_file_buffer = st.camera_input("Take a picture")
+        submit_btn = st.button("Submit", key="submit_btn")
         if img_file_buffer is not None:
             bytes_data = img_file_buffer.getvalue()
             cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-            
-            if submit_btn: 
-                if nama == "" or nim == "":
-                    st.error("Harap masukkan nama dan NIM")
+            if submit_btn:
+                if name == "" or nim == "":
+                    st.error("Please enter name and NIM")
                 else:
-                    ret = submit_new(nama, nim, cv2_img)
-                    
-                    if ret == 1: 
-                        st.success("Mahasiswa Ditambahkan")
-                    elif ret == 0: 
-                        st.error("NIM Mahasiswa sudah ada")
-                    elif ret == -1: 
-                        st.error("Tidak ada wajah dalam gambar")
-
-elif choice == "Menghapus":
+                    ret = submitNew(name, nim, cv2_img)
+                    if ret == 1:
+                        st.success("Student Added")
+                    elif ret == 0:
+                        st.error("Student NIM already exists")
+                    elif ret == -1:
+                        st.error("There is no face in the picture")
+elif choice == "Deleting":
     def del_btn_callback(nim):
-        delete_one(nim)
-        st.success("Mahasiswa dihapus")
-        
-    nim = st.text_input("NIM", placeholder='Masukkan NIM')
-    submit_btn = st.button("Kirim", key="submit_btn")
-    
+        deleteOne(nim)
+        st.success("Student deleted")
+
+    nim = st.text_input("NIM", placeholder='Enter NIM')
+    submit_btn = st.button("Submit", key="submit_btn")
     if submit_btn:
-        nama, image, _ = get_info_from_nim(nim)
-        
-        if nama == None and image == None:
-            st.error("NIM Mahasiswa tidak ditemukan")
+        name, image, _ = get_info_from_nim(nim)
+        if name is None and image is None:
+            st.error("Student NIM does not exist")
         else:
-            st.success(f"Nama Mahasiswa dengan NIM {nim} adalah: {nama}")
-            st.warning("Silakan periksa gambar di bawah untuk memastikan Anda menghapus mahasiswa yang benar")
+            st.success(f"Name of student with NIM {nim} is: {name}")
+            st.warning("Please check the image below to make sure you are deleting the right student")
             st.image(image)
-            del_btn = st.button("Hapus", key="del_btn", on_click=del_btn_callback, args=(nim,))
-            
-elif choice == "Menyesuaikan":
-    def form_callback(old_nama, old_nim, old_image, old_idx):
-        new_nama = st.session_state['new_nama']
+            del_btn = st.button("Delete", key="del_btn", on_click=del_btn_callback, args=(nim,))
+elif choice == "Adjusting":
+    def form_callback(old_name, old_nim, old_image, old_idx):
+        new_name = st.session_state['new_name']
         new_nim = st.session_state['new_nim']
         new_image = st.session_state['new_image']
-        
-        nama = old_nama
+
+        name = old_name
         nim = old_nim
         image = old_image
-        
+
         if new_image is not None:
             image = cv2.imdecode(np.frombuffer(new_image.read(), np.uint8), cv2.IMREAD_COLOR)
-            
-        if new_nama != old_nama:
-            nama = new_nama
-            
+
+        if new_name != old_name:
+            name = new_name
+
         if new_nim != old_nim:
             nim = new_nim
-        
-        ret = submit_new(nama, nim, image, old_idx=old_idx)
-        
-        if ret == 1: 
-            st.success("Mahasiswa Ditambahkan")
-        elif ret == 0: 
-            st.error("NIM Mahasiswa sudah ada")
-        elif ret == -1: 
-            st.error("Tidak ada wajah dalam gambar")
-            
-    nim = st.text_input("NIM", placeholder='Masukkan NIM')
-    submit_btn = st.button("Kirim", key="submit_btn")
-    
+
+        ret = submitNew(name, nim, image, old_idx=old_idx)
+        if ret == 1:
+            st.success("Student Added")
+        elif ret == 0:
+            st.error("Student NIM already exists")
+        elif ret == -1:
+            st.error("There is no face in the picture")
+
+    nim = st.text_input("NIM", placeholder='Enter NIM')
+    submit_btn = st.button("Submit", key="submit_btn")
     if submit_btn:
-        old_nama, old_image, old_idx = get_info_from_nim(nim)
-        
-        if old_nama == None and old_image == None:
-            st.error("NIM Mahasiswa tidak ditemukan")
+        old_name, old_image, old_idx = get_info_from_nim(nim)
+        if old_name is None and old_image is None:
+            st.error("Student NIM does not exist")
         else:
             with st.form(key='my_form'):
-                st.title("Menyesuaikan informasi mahasiswa")
+                st.title("Adjusting student info")
                 col1, col2 = st.columns(2)
-                new_nama = col1.text_input("Nama", key='new_nama', value=old_nama, placeholder='Masukkan nama baru')
-                new_nim  = col1.text_input("NIM", key='new_nim', value=nim, placeholder='Masukkan NIM baru')
-                new_image = col1.file_uploader("Unggah gambar baru", key='new_image', type=['jpg','png','jpeg'])
-                col2.image(old_image, caption='Gambar saat ini', width=400)
-                st.form_submit_button(label='Kirim', on_click=form_callback, args=(old_nama, nim, old_image, old_idx))
+                new_name = col1.text_input("Name", key='new_name', value=old_name, placeholder='Enter new name')
+                new_nim = col1.text_input("NIM", key='new_nim', value=nim, placeholder='Enter new NIM')
+                new_image = col1.file_uploader("Upload new image", key='new_image', type=['jpg', 'png', 'jpeg'])
+                col2.image(old_image, caption='Current image', width=400)
+                st.form_submit_button(label='Submit', on_click=form_callback, args=(old_name, nim, old_image, old_idx))
+
