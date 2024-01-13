@@ -29,9 +29,9 @@ nim_container.success('NIM: Tidak Diketahui')
 # Create a table to display information
 info_table = st.sidebar.table([[f"Nama: {nama_container.info}", f"NIM: {nim_container.success}"]])
 
-# Load audio files
-student_detected_audio = AudioSegment.from_file("audio/StudentIsDetected.mp3", format="mp3")
-student_not_detected_audio = AudioSegment.from_file("audio/StudentIsNotDetected.mp3", format="mp3")
+student_detected_audio = AudioSegment.from_file("audio/StudentIsDetected.mp3", format="mp3", codec="ffprobe")
+student_not_detected_audio = AudioSegment.from_file("audio/StudentIsNotDetected.mp3", format="mp3", codec="ffprobe")
+
 
 st.title("Aplikasi Pengenalan Wajah")
 st.write(WEBCAM_PROMPT)
