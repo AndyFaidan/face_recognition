@@ -5,6 +5,8 @@ import yaml
 from utils import recognize, build_dataset
 from pydub import AudioSegment
 from pydub.playback import play
+import requests
+from io import BytesIO
 
 # Path: code\app.py
 st.set_page_config(layout="wide")
@@ -29,9 +31,18 @@ nim_container.success('NIM: Tidak Diketahui')
 # Create a table to display information
 info_table = st.sidebar.table([[f"Nama: {nama_container.info}", f"NIM: {nim_container.success}"]])
 
-# Load audio files
-student_detected_audio = AudioSegment.from_file("audio/StudentIsDetected.mp3", format="mp3")
-student_not_detected_audio = AudioSegment.from_file("audio/StudentIsNotDetected.mp3", format="mp3")
+# Load audio files dynamically from GitHub repository
+repo_url = "https://raw.githubusercontent.com/username/repository/main/"
+student_detected_audio_url = repo_url + "audio/StudentIsDetected.mp3"
+student_not_detected_audio_url = repo_url + "audio/StudentIsNotDetected.mp3"
+
+# Download audio files
+student_detected_audio_content = requests.get(student_detected_audio_url).content
+student_not_detected_audio_content = requests.get(student_not_detected_audio_url).content
+
+# Load audio files from content
+student_detected_audio = AudioSegment.from_file(BytesIO(student_detected_audio_content), format="mp3")
+student_not_detected_audio = AudioSegment.from_file(BytesIO(student_not_detected_audio_content), format="mp3")
 
 st.title("Aplikasi Pengenalan Wajah")
 st.write(WEBCAM_PROMPT)
