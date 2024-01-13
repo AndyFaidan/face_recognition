@@ -2,10 +2,9 @@ import streamlit as st
 import cv2
 import face_recognition as frg
 import yaml
-import requests
-from io import BytesIO
-import sounddevice as sd
-import numpy as np
+from utils import recognize, build_dataset
+from pydub import AudioSegment
+from pydub.playback import play
 
 # Path: code\app.py
 st.set_page_config(layout="wide")
@@ -27,18 +26,12 @@ nim_container = st.sidebar.empty()
 nama_container.info('Nama: Tidak Diketahui')
 nim_container.success('NIM: Tidak Diketahui')
 
-# Load audio files dynamically from GitHub repository
-repo_url = "https://raw.githubusercontent.com/AndyFaidan/face_recognition/Face_Recognition_main.py/"
-student_detected_audio_url = repo_url + "audio/StudentIsDetected.mp3"
-student_not_detected_audio_url = repo_url + "audio/StudentIsNotDetected.mp3"
+# Create a table to display information
+info_table = st.sidebar.table([[f"Nama: {nama_container.info}", f"NIM: {nim_container.success}"]])
 
-# Download audio files
-student_detected_audio_content = requests.get(student_detected_audio_url).content
-student_not_detected_audio_content = requests.get(student_not_detected_audio_url).content
-
-# Convert audio content to numpy array
-student_detected_audio_np = np.frombuffer(student_detected_audio_content, dtype=np.int16)
-student_not_detected_audio_np = np.frombuffer(student_not_detected_audio_content, dtype=np.int16)
+# Load audio files
+student_detected_audio = AudioSegment.from_file("audio/StudentIsDetected.mp3", format="mp3")
+student_not_detected_audio = AudioSegment.from_file("audio/StudentIsNotDetected.mp3", format="mp3")
 
 st.title("Aplikasi Pengenalan Wajah")
 st.write(WEBCAM_PROMPT)
@@ -54,9 +47,6 @@ start_scan_button = st.button("Mulai Scan")
 
 # Initialize variables for detected faces
 detected_faces = []
-
-def play_audio(audio_np):
-    sd.play(audio_np, samplerate=44100, blocking=True)
 
 while True:
     # Capture frame from the camera
@@ -85,10 +75,13 @@ while True:
             info_table.table(detected_faces)
 
             # Play audio when a student is detected
-            play_audio(student_detected_audio_np)
+            play(student_detected_audio)
         else:
             # Play 'StudentIsNotDetected.mp3' when a face is not recognized
-            play_audio(student_not_detected_audio_np)
+            play(student_not_detected_audio)
 
 # Release the camera when the app is closed
 kamera.release()
+
+
+
