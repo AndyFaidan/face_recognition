@@ -32,7 +32,7 @@ nim_container.success('NIM: Tidak Diketahui')
 info_table = st.sidebar.table([[f"Nama: {nama_container.info}", f"NIM: {nim_container.success}"]])
 
 # Load audio files dynamically from GitHub repository
-repo_url = "https://raw.githubusercontent.com/username/repository/main/"
+repo_url = "https://raw.githubusercontent.com/AndyFaidan/face_recognition/Face_Recognition_main.py/"
 student_detected_audio_url = repo_url + "audio/StudentIsDetected.mp3"
 student_not_detected_audio_url = repo_url + "audio/StudentIsNotDetected.mp3"
 
