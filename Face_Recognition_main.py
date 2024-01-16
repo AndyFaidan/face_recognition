@@ -3,8 +3,6 @@ import cv2
 import face_recognition as frg
 import yaml
 from utils import recognize, build_dataset
-from pydub import AudioSegment
-from pydub.playback import play
 
 # Path: code\app.py
 st.set_page_config(layout="wide")
@@ -28,10 +26,6 @@ nim_container.success('NIM: Tidak Diketahui')
 
 # Create a table to display information
 info_table = st.sidebar.table([[f"Nama: {nama_container.info}", f"NIM: {nim_container.success}"]])
-
-student_detected_audio = AudioSegment.from_file("audio/StudentIsDetected.mp3", format="mp3", codec="ffprobe")
-student_not_detected_audio = AudioSegment.from_file("audio/StudentIsNotDetected.mp3", format="mp3", codec="ffprobe")
-
 
 st.title("Aplikasi Pengenalan Wajah")
 st.write(WEBCAM_PROMPT)
@@ -74,14 +68,5 @@ while True:
             detected_faces.append((nama, nim))
             info_table.table(detected_faces)
 
-            # Play audio when a student is detected
-            play(student_detected_audio)
-        else:
-            # Play 'StudentIsNotDetected.mp3' when a face is not recognized
-            play(student_not_detected_audio)
-
 # Release the camera when the app is closed
 kamera.release()
-
-
-
