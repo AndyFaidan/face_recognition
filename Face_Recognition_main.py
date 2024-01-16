@@ -1,7 +1,8 @@
 import streamlit as st
 import cv2
-from utils import recognize  # Pastikan file utils.py sudah ada di direktori yang benar
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration, WebRtcMode
 import yaml
+from utils import recognize  # Pastikan file utils.py sudah ada di direktori yang benar
 
 # Set page configuration
 st.set_page_config(layout="wide")
@@ -31,43 +32,42 @@ info_table = st.sidebar.table([[f"Nama: {nama_container.info}", f"NIM: {nim_cont
 st.title("Aplikasi Pengenalan Wajah")
 st.write(WEBCAM_PROMPT)
 
-# Camera setup
-kamera = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
-kamera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-kamera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-FRAME_WINDOW = st.image([])
-
-# Button to start face detection scan
-start_scan_button = st.button("Mulai Scan")
-
 # Initialize variables for detected faces
 detected_faces = []
 
-# Check if the button is pressed
-if start_scan_button:
-    # Capture frame from the camera
-    berhasil, bingkai = kamera.read()
+class VideoProcessor(VideoProcessorBase):
+    def __init__(self) -> None:
+        super().__init__()
 
-    if not berhasil:
-        st.error("Gagal mengambil bingkai dari kamera")
-        st.info("Harap matikan aplikasi lain yang menggunakan kamera dan restart aplikasi")
-        st.stop()
+    def recv(self, frame):
+        # Process the frame for face recognition
+        gambar, nama, nim = recognize(frame, TOLERANCE)
+        gambar = cv2.cvtColor(gambar, cv2.COLOR_BGR2RGB)
 
-    # Process the frame for face recognition
-    gambar, nama, nim = recognize(bingkai, TOLERANCE)
-    gambar = cv2.cvtColor(gambar, cv2.COLOR_BGR2RGB)
+        # Display the name and NIM of the person
+        nama_container.info(f"Nama: {nama}")
+        nim_container.success(f"NIM: {nim}")
 
-    # Display the name and NIM of the person
-    nama_container.info(f"Nama: {nama}")
-    nim_container.success(f"NIM: {nim}")
+        # Display the frame with Streamlit
+        st.image(gambar, channels="RGB")
 
-    # Display the frame with Streamlit
-    FRAME_WINDOW.image(gambar, channels="RGB")
+        # Update the table with the latest information
+        if nama != 'Tidak Diketahui' and nim != 'Tidak Diketahui' and (nama, nim) not in detected_faces:
+            detected_faces.append((nama, nim))
+            info_table.table(detected_faces)
 
-    # Update the table with the latest information
-    if nama != 'Tidak Diketahui' and nim != 'Tidak Diketahui' and (nama, nim) not in detected_faces:
-        detected_faces.append((nama, nim))
-        info_table.table(detected_faces)
+# Use WebRTC to capture video from the user's camera
+webrtc_ctx = webrtc_streamer(
+    key="example",
+    video_processor_factory=VideoProcessor,
+    mode=WebRtcMode.SENDRECV,
+    rtc_configuration=RTCConfiguration(
+        iceServers=[
+            {"urls": ["stun:stun.l.google.com:19302"]},
+        ]
+    ),
+)
 
 # Release the camera when the app is closed
-kamera.release()
+if webrtc_ctx.state.playing:
+    webrtc_ctx.stop()
