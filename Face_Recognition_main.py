@@ -1,23 +1,23 @@
 import streamlit as st
 import cv2
-import face_recognition as frg
+from utils import recognize  # Pastikan file utils.py sudah ada di direktori yang benar
 import yaml
-from utils import recognize, build_dataset
 
-# Path: code\app.py
+# Set page configuration
 st.set_page_config(layout="wide")
 
 # Configuration
 cfg = yaml.load(open('config.yaml', 'r'), Loader=yaml.FullLoader)
 WEBCAM_PROMPT = cfg['INFO']['WEBCAM_PROMPT']
 
+# Sidebar settings
 st.sidebar.title("Pengaturan")
 
-# Slide to adjust tolerance
+# Slider to adjust tolerance
 TOLERANCE = st.sidebar.slider("Toleransi", 0.0, 1.0, 0.5, 0.01)
 st.sidebar.info("Toleransi adalah ambang batas untuk pengenalan wajah. Semakin rendah toleransinya, semakin ketat pengenalan wajahnya. Semakin tinggi toleransinya, semakin longgar pengenalan wajahnya.")
 
-# Information Section
+# Information Section in sidebar
 st.sidebar.title("Informasi Mahasiswa")
 nama_container = st.sidebar.empty()
 nim_container = st.sidebar.empty()
@@ -27,10 +27,11 @@ nim_container.success('NIM: Tidak Diketahui')
 # Create a table to display information
 info_table = st.sidebar.table([[f"Nama: {nama_container.info}", f"NIM: {nim_container.success}"]])
 
+# Main app title
 st.title("Aplikasi Pengenalan Wajah")
 st.write(WEBCAM_PROMPT)
 
-# Camera Setup
+# Camera setup
 kamera = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
 kamera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 kamera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
@@ -42,7 +43,8 @@ start_scan_button = st.button("Mulai Scan")
 # Initialize variables for detected faces
 detected_faces = []
 
-while True:
+# Check if the button is pressed
+if start_scan_button:
     # Capture frame from the camera
     berhasil, bingkai = kamera.read()
 
@@ -51,22 +53,21 @@ while True:
         st.info("Harap matikan aplikasi lain yang menggunakan kamera dan restart aplikasi")
         st.stop()
 
-    if start_scan_button:
-        # Process the frame for face recognition
-        gambar, nama, nim = recognize(bingkai, TOLERANCE)
-        gambar = cv2.cvtColor(gambar, cv2.COLOR_BGR2RGB)
+    # Process the frame for face recognition
+    gambar, nama, nim = recognize(bingkai, TOLERANCE)
+    gambar = cv2.cvtColor(gambar, cv2.COLOR_BGR2RGB)
 
-        # Display the name and NIM of the person
-        nama_container.info(f"Nama: {nama}")
-        nim_container.success(f"NIM: {nim}")
+    # Display the name and NIM of the person
+    nama_container.info(f"Nama: {nama}")
+    nim_container.success(f"NIM: {nim}")
 
-        # Display the frame with Streamlit
-        FRAME_WINDOW.image(gambar, channels="RGB")
+    # Display the frame with Streamlit
+    FRAME_WINDOW.image(gambar, channels="RGB")
 
-        # Update the table with the latest information
-        if nama != 'Tidak Diketahui' and nim != 'Tidak Diketahui' and (nama, nim) not in detected_faces:
-            detected_faces.append((nama, nim))
-            info_table.table(detected_faces)
+    # Update the table with the latest information
+    if nama != 'Tidak Diketahui' and nim != 'Tidak Diketahui' and (nama, nim) not in detected_faces:
+        detected_faces.append((nama, nim))
+        info_table.table(detected_faces)
 
 # Release the camera when the app is closed
 kamera.release()
