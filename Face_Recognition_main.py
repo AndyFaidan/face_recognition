@@ -1,15 +1,10 @@
 import streamlit as st
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, WebRtcMode
 import cv2
-from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration, WebRtcMode
-import yaml
 from utils import recognize  # Pastikan file utils.py sudah ada di direktori yang benar
 
 # Set page configuration
 st.set_page_config(layout="wide")
-
-# Configuration
-cfg = yaml.load(open('config.yaml', 'r'), Loader=yaml.FullLoader)
-WEBCAM_PROMPT = cfg['INFO']['WEBCAM_PROMPT']
 
 # Sidebar settings
 st.sidebar.title("Pengaturan")
@@ -30,7 +25,6 @@ info_table = st.sidebar.table([[f"Nama: {nama_container.info}", f"NIM: {nim_cont
 
 # Main app title
 st.title("Aplikasi Pengenalan Wajah")
-st.write(WEBCAM_PROMPT)
 
 # Initialize variables for detected faces
 detected_faces = []
@@ -61,13 +55,8 @@ webrtc_ctx = webrtc_streamer(
     key="example",
     video_processor_factory=VideoProcessor,
     mode=WebRtcMode.SENDRECV,
-    rtc_configuration=RTCConfiguration(
-        iceServers=[
-            {"urls": ["stun:stun.l.google.com:19302"]},
-        ]
-    ),
 )
 
-# Release the camera when the app is closed
+# Jalankan aplikasi Streamlit
 if webrtc_ctx.state.playing:
-    webrtc_ctx.stop()
+    st.write("Streaming sedang berjalan...")
