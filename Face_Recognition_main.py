@@ -31,7 +31,7 @@ st.title("Aplikasi Pengenalan Wajah")
 st.write(WEBCAM_PROMPT)
 
 # Camera Setup
-kamera = cv2.VideoCapture(0)
+kamera = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
 kamera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 kamera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 FRAME_WINDOW = st.image([])
